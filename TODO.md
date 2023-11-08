@@ -1,0 +1,4 @@
+- json, reshuffle serializations (2-level)
+- explore the (multimodalize) duct-tape way?
+- mypy
+- add a sample loader

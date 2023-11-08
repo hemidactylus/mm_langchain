@@ -3,7 +3,7 @@ import os
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.schema.document import Document
 
-from mm_langchain.vectorstores import Cassandra
+from mm_langchain.mm_vectorstores import Cassandra
 
 
 import cassio

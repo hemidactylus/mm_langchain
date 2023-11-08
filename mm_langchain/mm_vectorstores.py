@@ -1,11 +1,18 @@
+import json
+import uuid
 from typing import Any, Dict, Iterable, List, Optional, Union
 
 ## Components from langchain
 from langchain.schema.document import Document
 from langchain.schema.embeddings import Embeddings
 
-from .abstract_vectorstores import VectorStore, VectorReaderWriter
-from .mm_types import DefaultVSearchResult
+from .mm_types import DefaultVSearchResult, MMContent, MMStoredDocument
+from .mm_abstract_vectorstores import (
+    MMVectorStore,
+    VectorReaderWriter,
+    VectorStore,
+)
+from .mm_abstract_embeddings import MMEmbeddings, MMContentSerializer
 
 from cassio.table import MetadataVectorCassandraTable
 
@@ -22,9 +29,9 @@ class CassandraVectorReaderWriter(VectorReaderWriter[DefaultVSearchResult]):
             vector_dimension=vector_dimension,
         )
 
-    def store_contents(self, contents: Iterable[str], vectors: Iterable[List[float]], metadatas: Optional[Iterable[dict]] = None, ids: Optional[Iterable[str]] = None, **kwargs: Any) -> List[str]:
+    def store_contents(self, contents_str: Iterable[str], vectors: Iterable[List[float]], metadatas: Optional[Iterable[dict]] = None, ids: Optional[Iterable[str]] = None, **kwargs: Any) -> List[str]:
         # silly reference implementation
-        contents0 = list(contents)
+        contents0 = list(contents_str)
         vectors0 = list(vectors)
         metadatas0 = list(metadatas) if metadatas else [{}] * len(contents0)
         ids0 = list(ids) if ids else [uuid.uuid4().hex for _ in contents0]
@@ -56,6 +63,8 @@ class CassandraVectorReaderWriter(VectorReaderWriter[DefaultVSearchResult]):
             )
         ]
 
+    def clear(self):
+        self.table.clear()
 
 class Cassandra(VectorStore[DefaultVSearchResult]):
 
@@ -106,3 +115,63 @@ class Cassandra(VectorStore[DefaultVSearchResult]):
                 **kwargs,
             )
         ]
+
+
+class MMCassandra(MMVectorStore[DefaultVSearchResult]):
+
+    _embedding_dimension: int
+
+    @staticmethod
+    def _filter_to_metadata(filter_dict: Optional[Dict[str, str]]) -> Dict[str, Any]:
+        if filter_dict is None:
+            return {}
+        else:
+            return filter_dict
+
+    def __init__(
+        self,
+        embedding: MMEmbeddings,
+        content_serializer: MMContentSerializer,
+        table_name: str,
+        *pargs,
+        **kwargs,
+    ) -> None:
+        self._embedding_dimension = len(
+            embedding.embed_one({"text": "This is a sample sentence."})
+        )
+        vector_rw = CassandraVectorReaderWriter(
+            table_name=table_name,
+            vector_dimension=self._embedding_dimension,
+        )
+        super().__init__(
+            vector_reader_writer=vector_rw,
+            embedding=embedding,
+            content_serializer=content_serializer,
+        )
+
+    @property
+    def embeddings(self) -> Optional[MMEmbeddings]:
+        raise NotImplementedError
+
+    def similarity_search(
+        self,
+        query: MMContent,
+        k: int = 4,
+        filter: Optional[Dict[str, str]] = None,
+        **kwargs: Any,
+    ) -> List[MMStoredDocument]:
+        """Return (mm) docs most similar to query."""
+        search_metadata = self._filter_to_metadata(filter)
+        search_vector = self.embedding.embed_one(query)
+        return [
+            self.content_serializer.unserialize_stored(stored=json.loads(rbl), metadata=rme)
+            for (rid, rbl, rme, rsi) in self.vector_reader_writer.search_by_vector(
+                vector=search_vector,
+                k=k,
+                metadata=search_metadata,
+                **kwargs,
+            )
+        ]
+
+    def clear(self):
+        self.vector_reader_writer.clear()

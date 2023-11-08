@@ -1,11 +1,12 @@
-from pathlib import Path
 import os
 
-from multimodal_support import (
-    MultiModalHuggingFaceEmbeddings,
-    MultiModalCassandra,
-)
+from PIL import Image
+
 import cassio
+
+from mm_langchain.mm_vectorstores import MMCassandra
+from mm_langchain.mm_huggingface_embeddings import MMHuggingFaceEmbeddings, MMImageTextSerializer
+from mm_langchain.mm_types import MMContent
 
 
 cassio.init(
@@ -16,14 +17,26 @@ cassio.init(
 
 vector_store_name = 'mm_test'
 
-clip_embeddings = MultiModalHuggingFaceEmbeddings(model_name="clip-ViT-B-32")
-vectorstore = MultiModalCassandra(embedding=clip_embeddings, table_name=vector_store_name, session=None, keyspace=None)
+mm_embeddings = MMHuggingFaceEmbeddings(model_name="clip-ViT-B-32")
+mm_vectorstore = MMCassandra(
+    embedding=mm_embeddings,
+    content_serializer=MMImageTextSerializer(),
+    table_name=vector_store_name,
+)
 
-query_string = "a house in modern style"
+# querying in a couple of ways
 
-results = vectorstore.similarity_search(query_string, k=1)
-if results == []:
-    print("\n\n** It appears that the vector store is empty. Please populate it first **\n")
-else:
-    result = results[0]
-    print(result.page_content, result.metadata)
+print("\nText query on image entries.")
+query1: MMContent = {"text": "An iguana on a bike"}
+results1 = mm_vectorstore.similarity_search(query1, k=1)
+print("Results:")
+for result1 in results1:
+    print(f" * Content={result1.content} [metadata={result1.metadata}]")
+
+query_image = "images/query/shining_sun.jpg"
+print("\nImage query on image entries.")
+query2: MMContent = {"image": Image.open(query_image)}
+results2 = mm_vectorstore.similarity_search(query2, k=1)
+print("Results:")
+for result2 in results2:
+    print(f" * Content={result2.content} [metadata={result2.metadata}]")
