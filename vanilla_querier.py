@@ -1,7 +1,6 @@
 import os
 
 from langchain.embeddings import OpenAIEmbeddings
-from langchain.schema.document import Document
 
 from mm_langchain.mm_vectorstores import Cassandra
 
@@ -15,7 +14,7 @@ cassio.init(
     keyspace=os.environ.get("ASTRA_DB_KEYSPACE"),
 )
 
-vector_store_name = 'va_test'
+vector_store_name = "va_test"
 
 v_embeddings = OpenAIEmbeddings()
 v_vectorstore = Cassandra(embedding=v_embeddings, table_name=vector_store_name)

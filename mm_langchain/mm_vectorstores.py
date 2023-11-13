@@ -17,7 +17,6 @@ from cassio.table import MetadataVectorCassandraTable
 
 
 class CassandraVectorReaderWriter(VectorReaderWriter[DefaultVSearchResult]):
-
     def __init__(
         self,
         table_name: str,
@@ -28,7 +27,14 @@ class CassandraVectorReaderWriter(VectorReaderWriter[DefaultVSearchResult]):
             vector_dimension=vector_dimension,
         )
 
-    def store_contents(self, contents_str: Iterable[str], vectors: Iterable[List[float]], metadatas: Optional[Iterable[dict]] = None, ids: Optional[Iterable[str]] = None, **kwargs: Any) -> List[str]:
+    def store_contents(
+        self,
+        contents_str: Iterable[str],
+        vectors: Iterable[List[float]],
+        metadatas: Optional[Iterable[dict]] = None,
+        ids: Optional[Iterable[str]] = None,
+        **kwargs: Any,
+    ) -> List[str]:
         # silly reference implementation
         contents0 = list(contents_str)
         vectors0 = list(vectors)
@@ -45,7 +51,13 @@ class CassandraVectorReaderWriter(VectorReaderWriter[DefaultVSearchResult]):
             inserteds.append(xid)
         return inserteds
 
-    def search_by_vector(self, vector: List[float], k: int = 4, metadata: Optional[dict] = None, **kwargs: Any) -> List[DefaultVSearchResult]:
+    def search_by_vector(
+        self,
+        vector: List[float],
+        k: int = 4,
+        metadata: Optional[dict] = None,
+        **kwargs: Any,
+    ) -> List[DefaultVSearchResult]:
         return [
             (
                 result["row_id"],
@@ -65,8 +77,8 @@ class CassandraVectorReaderWriter(VectorReaderWriter[DefaultVSearchResult]):
     def clear(self):
         self.table.clear()
 
-class Cassandra(VectorStore[DefaultVSearchResult]):
 
+class Cassandra(VectorStore[DefaultVSearchResult]):
     _embedding_dimension: Union[int, None]
 
     @staticmethod
@@ -82,7 +94,7 @@ class Cassandra(VectorStore[DefaultVSearchResult]):
                 self.embedding.embed_query("This is a sample sentence.")
             )
         return self._embedding_dimension
-    
+
     def __init__(
         self,
         embedding: Embeddings,
@@ -117,7 +129,6 @@ class Cassandra(VectorStore[DefaultVSearchResult]):
 
 
 class MMCassandra(MMVectorStore[DefaultVSearchResult]):
-
     _embedding_dimension: int
 
     @staticmethod
@@ -164,7 +175,9 @@ class MMCassandra(MMVectorStore[DefaultVSearchResult]):
         search_vector = self.embedding.embed_one(query)
         return [
             MMStoredDocument(
-                content=self.content_serializer.deserialize_stored_str_to_content(rbl, metadata=rme),
+                content=self.content_serializer.deserialize_stored_str_to_content(
+                    rbl, metadata=rme
+                ),
                 metadata=rme,
             )
             for (rid, rbl, rme, rsi) in self.vector_reader_writer.search_by_vector(

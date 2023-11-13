@@ -15,7 +15,7 @@ cassio.init(
     keyspace=os.environ.get("ASTRA_DB_KEYSPACE"),
 )
 
-vector_store_name = 'va_test'
+vector_store_name = "va_test"
 
 v_embeddings = OpenAIEmbeddings()
 v_vectorstore = Cassandra(embedding=v_embeddings, table_name=vector_store_name)
@@ -24,7 +24,10 @@ v_vectorstore = Cassandra(embedding=v_embeddings, table_name=vector_store_name)
 ids1 = v_vectorstore.add_documents(
     documents=[
         Document(page_content="Beware of the spiderless house."),
-        Document(page_content="Argiope is a friendly spider in the meadows.", metadata={"family": "araneidae"}),
+        Document(
+            page_content="Argiope is a friendly spider in the meadows.",
+            metadata={"family": "araneidae"},
+        ),
     ],
     ids=["bew", "arg"],
 )

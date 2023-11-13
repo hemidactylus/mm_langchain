@@ -1,5 +1,3 @@
-import os
-
 from PIL import Image
 
 from mm_langchain.mm_huggingface_embeddings import MMHuggingFaceEmbeddings
@@ -14,13 +12,15 @@ filenames = [
 
 mm_embeddings = MMHuggingFaceEmbeddings(model_name="clip-ViT-B-32")
 
-image_contents = [
-    {"image": Image.open(fn)}
-    for fn in filenames
-]
+image_contents = [{"image": Image.open(fn)} for fn in filenames]
+
 
 def cos(v1, v2):
-    return sum(x*y for x,y in zip(v1,v2)) / (sum(x*x for x in v1)*sum(y*y for y in v2))**0.5
+    return (
+        sum(x * y for x, y in zip(v1, v2))
+        / (sum(x * x for x in v1) * sum(y * y for y in v2)) ** 0.5
+    )
+
 
 def cos_sim(t1=None, ip1=None, t2=None, ip2=None):
     ct1 = {
@@ -41,6 +41,7 @@ def cos_sim(t1=None, ip1=None, t2=None, ip2=None):
     }
     vecs = mm_embeddings.embed_many([ct1, ct2])
     return cos(vecs[0], vecs[1])
+
 
 """
 Notes:

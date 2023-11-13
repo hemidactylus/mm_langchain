@@ -1,6 +1,8 @@
+black>=23.11.0
 cassio>=0.1.3
 langchain==0.0.329
 mypy==1.6.1
 openai==0.28.0
+ruff>=0.1.5
 sentence-transformers==2.2.2
 tiktoken==0.5.1

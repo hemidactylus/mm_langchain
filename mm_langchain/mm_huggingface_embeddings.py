@@ -4,7 +4,6 @@ from PIL.Image import Image as PILImageType
 
 from langchain.pydantic_v1 import BaseModel, Field
 
-from .mm_types import MMContent, MMStoredDocument
 from .mm_abstract_embeddings import MMEmbeddings, MMContentSerializer
 
 
@@ -48,8 +47,8 @@ class MMHuggingFaceEmbeddings(BaseModel, MMEmbeddings):
         else:
             raise ValueError(f"Unknown modality '{modality}'")
 
-class MMImageTextSerializer(MMContentSerializer):
 
+class MMImageTextSerializer(MMContentSerializer):
     @property
     def modalities(self) -> Set[str]:
         return {"text", "image"}
@@ -62,9 +61,11 @@ class MMImageTextSerializer(MMContentSerializer):
         else:
             raise ValueError(f"Unexpected modality '{modality}'")
 
-    def deserialize_by_modality(self, modality: str, stored_value: str, metadata: dict = {}) -> Any:
+    def deserialize_by_modality(
+        self, modality: str, stored_value: str, metadata: dict = {}
+    ) -> Any:
         if modality == "text":
-            return value
+            return stored_value
         elif modality == "image":
             return metadata.get("image_path", "<IMAGE>")
         else:

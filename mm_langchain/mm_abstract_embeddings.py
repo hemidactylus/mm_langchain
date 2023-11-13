@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Set
 import json
 
-from .mm_types import MMContent, MMStoredDocument
+from .mm_types import MMContent
 
 
 class MMEmbeddings(ABC):
@@ -27,7 +27,7 @@ class MMEmbeddings(ABC):
         Embed a single piece of multimodal content.
         For now, the merging policy is hardcoded here.
         """
-        assert(content != {})
+        assert content != {}
         assert len(content.keys() - self.modality_type_map.keys()) == 0
         for modality, value in content.items():
             assert isinstance(value, self.modality_type_map[modality])
@@ -38,7 +38,7 @@ class MMEmbeddings(ABC):
         }
         # average:
         num_modalities = len(vectors_map)
-        return [sum(xs)/num_modalities for xs in zip(*vectors_map.values())]
+        return [sum(xs) / num_modalities for xs in zip(*vectors_map.values())]
 
     def embed_many(self, contents: List[MMContent]) -> List[List[float]]:
         """Embed a list of contents."""
@@ -47,7 +47,6 @@ class MMEmbeddings(ABC):
 
 # this concerns the layer between the mm vector store and the reader-writer
 class MMContentSerializer(ABC):
-
     @property
     def modalities(self) -> Set[str]:
         raise NotImplementedError
@@ -56,7 +55,9 @@ class MMContentSerializer(ABC):
     def serialize_by_modality(self, modality: str, value: Any) -> str:
         """make this value into a string according to its modality."""
 
-    def deserialize_by_modality(self, modality: str, stored_value: str, metadata: dict = {}) -> Any:
+    def deserialize_by_modality(
+        self, modality: str, stored_value: str, metadata: dict = {}
+    ) -> Any:
         """
         restore "something" from the stored string. This needs not
         be the original 'value' (see MMStoredDocument).
@@ -78,22 +79,30 @@ class MMContentSerializer(ABC):
             for modality, value in content.items()
         }
 
-    def deserialize_stored(self, stored: Dict[str, str], metadata: Optional[dict] = None) -> MMContent:
+    def deserialize_stored(
+        self, stored: Dict[str, str], metadata: Optional[dict] = None
+    ) -> MMContent:
         """
         make a (string) mapping as retrieved from the store
         into a MMContent (not necessarily identical to the ingested document)
 
         metadata is to be treated read-only here
-        
+
         Default is to work modality-wise
         """
         return {
-            modality: self.deserialize_by_modality(modality, stored_value, metadata=metadata)
-            for modality, stored_value in stored.items()        
+            modality: self.deserialize_by_modality(
+                modality, stored_value, metadata=metadata
+            )
+            for modality, stored_value in stored.items()
         }
 
     def serialize_content_to_stored_str(self, content: MMContent) -> str:
-        return json.dumps(self.serialize_content(content), separators=(",", ":"), sort_keys=True)
+        return json.dumps(
+            self.serialize_content(content), separators=(",", ":"), sort_keys=True
+        )
 
-    def deserialize_stored_str_to_content(self, stored_str: str, metadata: Optional[dict] = None) -> MMContent:
+    def deserialize_stored_str_to_content(
+        self, stored_str: str, metadata: Optional[dict] = None
+    ) -> MMContent:
         return self.deserialize_stored(json.loads(stored_str), metadata=metadata)

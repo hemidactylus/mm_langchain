@@ -5,7 +5,10 @@ from PIL import Image
 import cassio
 
 from mm_langchain.mm_vectorstores import MMCassandra
-from mm_langchain.mm_huggingface_embeddings import MMHuggingFaceEmbeddings, MMImageTextSerializer
+from mm_langchain.mm_huggingface_embeddings import (
+    MMHuggingFaceEmbeddings,
+    MMImageTextSerializer,
+)
 from mm_langchain.mm_types import MMContent
 
 
@@ -15,7 +18,7 @@ cassio.init(
     keyspace=os.environ.get("ASTRA_DB_KEYSPACE"),
 )
 
-vector_store_name = 'mm_test'
+vector_store_name = "mm_test"
 
 mm_embeddings = MMHuggingFaceEmbeddings(model_name="clip-ViT-B-32")
 mm_vectorstore = MMCassandra(

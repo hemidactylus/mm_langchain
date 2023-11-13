@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, cast, Generic, Iterable, List, Optional, Set, TypeVar
+from typing import Any, Generic, Iterable, List, Optional, TypeVar
 
 ## Components from langchain
 from langchain.schema.document import Document
@@ -13,29 +13,34 @@ from .mm_types import MMContent, MMDocument, MMStoredDocument
 
 # i.e. whatever comes out of the vector store backend:
 #   (e.g. a DefaultVSearchResult)
-S = TypeVar('S')
+S = TypeVar("S")
 
 
 class VectorReaderWriter(ABC, Generic[S]):
-
     @abstractmethod
-    def store_contents(self, contents_str: Iterable[str], vectors: Iterable[List[float]], metadatas: Optional[Iterable[dict]] = None, **kwargs: Any) -> List[str]:
+    def store_contents(
+        self,
+        contents_str: Iterable[str],
+        vectors: Iterable[List[float]],
+        metadatas: Optional[Iterable[dict]] = None,
+        **kwargs: Any,
+    ) -> List[str]:
         """Actual storing to backend. the "contents" are stringy blobs, no questions asked."""
 
     @abstractmethod
-    def search_by_vector(self, vector: List[float], k: int = 4, **kwargs: Any) -> List[S]:
+    def search_by_vector(
+        self, vector: List[float], k: int = 4, **kwargs: Any
+    ) -> List[S]:
         """run an ANN search and return an S for each returned entry"""
 
 
 class VectorStore(Generic[S]):
-
     vector_reader_writer: VectorReaderWriter[S]
     embedding: Embeddings
 
     @property
     def embeddings(self) -> Optional[Embeddings]:
         raise NotImplementedError
-
 
     @abstractmethod
     def similarity_search(
@@ -46,7 +51,12 @@ class VectorStore(Generic[S]):
         The implementation depends at least on what `S` is)
         """
 
-    def add_texts(self, texts: List[str], metadatas: Optional[List[Optional[dict]]] = None, **kwargs: Any) -> List[str]:
+    def add_texts(
+        self,
+        texts: List[str],
+        metadatas: Optional[List[Optional[dict]]] = None,
+        **kwargs: Any,
+    ) -> List[str]:
         """run texts through the embedding and store the full resulting entries."""
         embedding_vectors = self.embedding.embed_documents(texts)
         metadatas0 = [md or {} for md in metadatas]
@@ -64,7 +74,6 @@ class VectorStore(Generic[S]):
 
 
 class MMVectorStore(ABC, Generic[S]):
-
     vector_reader_writer: VectorReaderWriter[S]
     embedding: MMEmbeddings
     content_serializer: MMContentSerializer
@@ -95,7 +104,12 @@ class MMVectorStore(ABC, Generic[S]):
         The implementation depends at least on what `S` is)
         """
 
-    def add_contents(self, contents: List[MMContent], metadatas: Optional[List[Optional[dict]]] = None, **kwargs: Any) -> List[str]:
+    def add_contents(
+        self,
+        contents: List[MMContent],
+        metadatas: Optional[List[Optional[dict]]] = None,
+        **kwargs: Any,
+    ) -> List[str]:
         """run contexts through the embedding and store the full resulting entries."""
         embedding_vectors = self.embedding.embed_many(contents)
         metadatas0 = [md or {} for md in metadatas]

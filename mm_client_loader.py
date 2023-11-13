@@ -5,7 +5,10 @@ from PIL import Image
 import cassio
 
 from mm_langchain.mm_vectorstores import MMCassandra
-from mm_langchain.mm_huggingface_embeddings import MMHuggingFaceEmbeddings, MMImageTextSerializer
+from mm_langchain.mm_huggingface_embeddings import (
+    MMHuggingFaceEmbeddings,
+    MMImageTextSerializer,
+)
 from mm_langchain.mm_types import MMDocument
 
 
@@ -22,7 +25,7 @@ cassio.init(
     keyspace=os.environ.get("ASTRA_DB_KEYSPACE"),
 )
 
-vector_store_name = 'mm_test'
+vector_store_name = "mm_test"
 
 mm_embeddings = MMHuggingFaceEmbeddings(model_name="clip-ViT-B-32")
 mm_vectorstore = MMCassandra(
@@ -50,7 +53,10 @@ print(f"insertion1 = {insertion1}")
 insertion2 = mm_vectorstore.add_documents(
     documents=[
         MMDocument(content={"image": Image.open(filenames[2])}),
-        MMDocument(content={"image": Image.open(filenames[3])}, metadata={"image_path": filenames[3]}),
+        MMDocument(
+            content={"image": Image.open(filenames[3])},
+            metadata={"image_path": filenames[3]},
+        ),
     ]
 )
 print(f"insertion2 = {insertion2}")
