@@ -21,5 +21,5 @@ v_embeddings = OpenAIEmbeddings()
 v_vectorstore = Cassandra(embedding=v_embeddings, table_name=vector_store_name)
 
 
-for doc in v_vectorstore.similarity_search("Who can be a friend here?", k=1):
+for doc in v_vectorstore.similarity_search("Who can be my ally here?", k=1):
     print(doc)
