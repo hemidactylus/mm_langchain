@@ -24,5 +24,13 @@ class MMDocument(Serializable):
     def is_lc_serializable(cls) -> bool:
         return False  # for now...
 
-# as a matter of fact, it's an alias for now
-MMStoredDocument = MMDocument
+# as a matter of fact, it could well be an alias for now
+class MMStoredDocument(Serializable):
+    content: MMContent
+    metadata: dict = Field(default_factory=dict)
+
+    type: Literal["MMStoredDocument"] = "MMStoredDocument"
+
+    @classmethod
+    def is_lc_serializable(cls) -> bool:
+        return False  # for now...

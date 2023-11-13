@@ -1,4 +1,3 @@
-import json
 import uuid
 from typing import Any, Dict, Iterable, List, Optional, Union
 
@@ -164,7 +163,10 @@ class MMCassandra(MMVectorStore[DefaultVSearchResult]):
         search_metadata = self._filter_to_metadata(filter)
         search_vector = self.embedding.embed_one(query)
         return [
-            self.content_serializer.unserialize_stored(stored=json.loads(rbl), metadata=rme)
+            MMStoredDocument(
+                content=self.content_serializer.deserialize_stored_str_to_content(rbl, metadata=rme),
+                metadata=rme,
+            )
             for (rid, rbl, rme, rsi) in self.vector_reader_writer.search_by_vector(
                 vector=search_vector,
                 k=k,

@@ -1,4 +1,3 @@
-import json
 from abc import ABC, abstractmethod
 from typing import Any, cast, Generic, Iterable, List, Optional, Set, TypeVar
 
@@ -101,11 +100,8 @@ class MMVectorStore(ABC, Generic[S]):
         embedding_vectors = self.embedding.embed_many(contents)
         metadatas0 = [md or {} for md in metadatas]
         contents_str = [
-            json.dumps(serialized)
-            for serialized in (
-                self.content_serializer.serialize(content)
-                for content in contents
-            )
+            self.content_serializer.serialize_content_to_stored_str(content)
+            for content in zip(contents)
         ]
         return self.vector_reader_writer.store_contents(
             contents_str=contents_str,

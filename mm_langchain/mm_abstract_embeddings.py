@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Set
+import json
 
 from .mm_types import MMContent, MMStoredDocument
 
@@ -52,9 +53,47 @@ class MMContentSerializer(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def serialize(self, content: MMContent) -> Dict[str, str]:
-        """make all parts of the content into a string."""
+    def serialize_by_modality(self, modality: str, value: Any) -> str:
+        """make this value into a string according to its modality."""
 
-    def unserialize_stored(self, stored: Dict[str, str], metadata: Optional[dict]) -> MMStoredDocument:
-        """default is to leave as is."""
-        return cast(MMStoredDocument, stored)
+    def deserialize_by_modality(self, modality: str, stored_value: str, metadata: dict = {}) -> Any:
+        """
+        restore "something" from the stored string. This needs not
+        be the original 'value' (see MMStoredDocument).
+
+        metadata is to be treated read-only here
+
+        Default: leave the string as is
+        """
+        return stored_value
+
+    def serialize_content(self, content: MMContent) -> Dict[str, str]:
+        """
+        make all parts of the content into a string.
+
+        Default: work modality-wise (but overridable if convenient)
+        """
+        return {
+            modality: self.serialize_by_modality(modality, value)
+            for modality, value in content.items()
+        }
+
+    def deserialize_stored(self, stored: Dict[str, str], metadata: Optional[dict] = None) -> MMContent:
+        """
+        make a (string) mapping as retrieved from the store
+        into a MMContent (not necessarily identical to the ingested document)
+
+        metadata is to be treated read-only here
+        
+        Default is to work modality-wise
+        """
+        return {
+            modality: self.deserialize_by_modality(modality, stored_value, metadata=metadata)
+            for modality, stored_value in stored.items()        
+        }
+
+    def serialize_content_to_stored_str(self, content: MMContent) -> str:
+        return json.dumps(self.serialize_content(content), separators=(",", ":"), sort_keys=True)
+
+    def deserialize_stored_str_to_content(self, stored_str: str, metadata: Optional[dict] = None) -> MMContent:
+        return self.deserialize_stored(json.loads(stored_str), metadata=metadata)

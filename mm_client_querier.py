@@ -33,10 +33,17 @@ print("Results:")
 for result1 in results1:
     print(f" * Content={result1.content} [metadata={result1.metadata}]")
 
-query_image = "images/query/shining_sun.jpg"
-print("\nImage query on image entries.")
-query2: MMContent = {"image": Image.open(query_image)}
+print("\nText query on image entries (result lacks rich metadata).")
+query2: MMContent = {"text": "My oh-so-modern hous"}
 results2 = mm_vectorstore.similarity_search(query2, k=1)
 print("Results:")
 for result2 in results2:
     print(f" * Content={result2.content} [metadata={result2.metadata}]")
+
+query_image = "images/query/shining_sun.jpg"
+print("\nImage query on image entries.")
+query3: MMContent = {"image": Image.open(query_image)}
+results3 = mm_vectorstore.similarity_search(query3, k=1)
+print("Results:")
+for result3 in results3:
+    print(f" * Content={result3.content} [metadata={result3.metadata}]")

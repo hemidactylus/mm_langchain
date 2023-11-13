@@ -54,19 +54,18 @@ class MMImageTextSerializer(MMContentSerializer):
     def modalities(self) -> Set[str]:
         return {"text", "image"}
 
-    def serialize(self, content: MMContent) -> Dict[str, str]:
-        # dirty implementation
-        return {
-            modality: value if modality == "text" else "(an image)"
-            for modality, value in content.items()
-        }
+    def serialize_by_modality(self, modality: str, value: Any) -> str:
+        if modality == "text":
+            return value
+        elif modality == "image":
+            return "(an image)"
+        else:
+            raise ValueError(f"Unexpected modality '{modality}'")
 
-    def unserialize_stored(self, stored: Dict[str, str], metadata: Optional[dict]) -> MMStoredDocument:
-        # dirty implementation
-        return MMStoredDocument(
-            content={
-                modality: value if modality == "text" else metadata.get("image_path", "<IMAGE>")
-                for modality, value in stored.items()
-            },
-            metadata=metadata,
-        )
+    def deserialize_by_modality(self, modality: str, stored_value: str, metadata: dict = {}) -> Any:
+        if modality == "text":
+            return value
+        elif modality == "image":
+            return metadata.get("image_path", "<IMAGE>")
+        else:
+            raise ValueError(f"Unexpected modality '{modality}'")
