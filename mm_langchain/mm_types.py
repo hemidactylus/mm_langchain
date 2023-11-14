@@ -1,4 +1,4 @@
-from typing import Any, Dict, Literal, Optional, Tuple
+from typing import Any, Dict, Literal, Tuple
 
 from langchain.load.serializable import Serializable
 from langchain.pydantic_v1 import Field

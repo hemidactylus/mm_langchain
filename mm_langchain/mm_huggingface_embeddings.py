@@ -67,6 +67,7 @@ class MMImageTextSerializer(MMContentSerializer):
         if modality == "text":
             return stored_value
         elif modality == "image":
-            return (metadata or {}).get("image_path", "<IMAGE>")
+            metadata0 = metadata or {}
+            return metadata0.get("image_path", metadata0.get("image_url", "<IMAGE>"))
         else:
             raise ValueError(f"Unexpected modality '{modality}'")

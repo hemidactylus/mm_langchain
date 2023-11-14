@@ -42,6 +42,7 @@ def cos_sim(t1=None, ip1=None, t2=None, ip2=None):
     vecs = mm_embeddings.embed_many([ct1, ct2])
     return cos(vecs[0], vecs[1])
 
+
 print(cos_sim(None, filenames[0], None, filenames[1]))
 
 """

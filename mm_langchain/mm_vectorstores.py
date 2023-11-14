@@ -1,5 +1,5 @@
 import uuid
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional
 
 ## Components from langchain
 from langchain.schema.document import Document
@@ -79,7 +79,6 @@ class CassandraVectorReaderWriter(VectorReaderWriter[DefaultVSearchResult]):
 
 
 class Cassandra(VectorStore[DefaultVSearchResult]):
-
     @staticmethod
     def _filter_to_metadata(filter_dict: Optional[Dict[str, str]]) -> Dict[str, Any]:
         if filter_dict is None:
@@ -123,7 +122,6 @@ class Cassandra(VectorStore[DefaultVSearchResult]):
 
 
 class MMCassandra(MMVectorStore[DefaultVSearchResult]):
-
     @staticmethod
     def _filter_to_metadata(filter_dict: Optional[Dict[str, str]]) -> Dict[str, Any]:
         if filter_dict is None:

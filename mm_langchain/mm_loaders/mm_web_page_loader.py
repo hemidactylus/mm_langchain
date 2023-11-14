@@ -1,12 +1,11 @@
-from typing import Any, Iterable, List
+from typing import Any, Iterable, List, Union
 import requests
-import io
 
 from PIL import Image
 from PIL.Image import Image as PILImageType
 import bs4
 
-from .mm_abstract_loader import MMBaseLoader
+from .mm_abstract_loader import MMDisjointBaseLoader
 from ..mm_types import MMDocument
 
 default_header_template = {
@@ -38,7 +37,7 @@ def _url_to_image(url: str) -> PILImageType:
     return Image.open(requests.get(url, stream=True).raw)
 
 
-def _traverse(tree_base: bs4.BeautifulSoup) -> Iterable[dict]:
+def _traverse(tree_base: Union[bs4.BeautifulSoup, bs4.element.Tag]) -> Iterable[dict]:
     """
     traverse the tree, escaping to *.text as soon as there
     are no 'img' in the subtree. Otherwise, go deeper and repeat.
@@ -63,15 +62,14 @@ def _traverse(tree_base: bs4.BeautifulSoup) -> Iterable[dict]:
                     raise ValueError(f"Unexpected child: {child}")
 
 
-class MMWebBaseLoader(MMBaseLoader):
-
+class MMDisjointWebBaseLoader(MMDisjointBaseLoader):
     def __init__(
         self,
         url: str,
     ) -> None:
         self.url = url
         session = requests.Session()
-        session.headers = default_header_template
+        session.headers = dict(default_header_template)
         self.session = session
 
     def _scrape(
@@ -96,22 +94,28 @@ class MMWebBaseLoader(MMBaseLoader):
                 # flush buffer
                 if buffer:
                     full_txt = "\n".join(buffer)
-                    documents.append(MMDocument(content={"text": full_txt}, metadata=global_metadata))
+                    documents.append(
+                        MMDocument(content={"text": full_txt}, metadata=global_metadata)
+                    )
                 buffer = []
                 # append image
-                documents.append(MMDocument(
-                    content={"image": _url_to_image(trav["image_url"])},
-                    metadata={
-                        **global_metadata,
-                        **{"image_url": trav["image_url"]},
-                    },
-                ))
+                documents.append(
+                    MMDocument(
+                        content={"image": _url_to_image(trav["image_url"])},
+                        metadata={
+                            **global_metadata,
+                            **{"image_url": trav["image_url"]},
+                        },
+                    )
+                )
             else:
                 raise ValueError(str(trav))
         # flush buffer
         if buffer:
             full_txt = "\n".join(buffer)
-            documents.append(MMDocument(content={"text": full_txt}, metadata=global_metadata))
+            documents.append(
+                MMDocument(content={"text": full_txt}, metadata=global_metadata)
+            )
         buffer = []
         #
         return documents

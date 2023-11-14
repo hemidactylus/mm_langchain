@@ -34,9 +34,14 @@ Try queries
 python mm_client_querier.py
 ```
 
-### with a sample loader
+### with a sample web-page MM loader
 
-**TODO**
+```
+python mm_load_web_page.py
+```
+
+(you can query it with the above client querier -
+functional test, don't expect meaningful results)
 
 ### multimodal misc tests
 
