@@ -1,1 +1,4 @@
-- explore the (multimodalize) duct-tape way?
+- in the duct-tape solution:
+    - use generics throughout the code
+    - generalized param name for `embedding` in the vectorstore (no contract in the base class)
+    - generalized param names for the `similarity_search_with_score` methods (`query` and `k` are just a "tradition", not required in base class)

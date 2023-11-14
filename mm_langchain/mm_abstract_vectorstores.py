@@ -96,7 +96,7 @@ class MMVectorStore(ABC, Generic[S]):
 
     @property
     def embeddings(self) -> Optional[MMEmbeddings]:
-        raise NotImplementedError
+        return self.embedding
 
     @abstractmethod
     def similarity_search(

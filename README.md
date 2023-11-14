@@ -56,3 +56,9 @@ loader test:
 ```
 python -m mm_tests.test_mm_web_loader
 ```
+
+is code all right?
+
+```
+black . && ruff . && mypy .
+```
