@@ -6,13 +6,13 @@ from langchain.schema.vectorstore import VectorStore as BaseVectorStore
 
 from ..mm_types import MMContent, MMStoredDocument
 from ..mm_abstract_embeddings import MMEmbeddings, MMContentSerializer
-from ..mm_abstract_vectorstores import MMVectorStore
+from ..mm_abstract_vectorstores import MMVectorStore, VectorReaderWriter
 
 
 VST = TypeVar("VST", bound="BaseVectorStore")
 
 
-class DummyVectorReaderWriter:
+class DummyVectorReaderWriter(VectorReaderWriter):
     def store_contents(
         self,
         contents_str: Iterable[str],
@@ -52,6 +52,8 @@ def _unwrap_from_base_vectorstore(
 
 
 class DTMMVectorStore(MMVectorStore):
+    base_vector_store: BaseVectorStore
+
     def __init__(
         self,
         embedding: MMEmbeddings,
@@ -148,7 +150,7 @@ def duct_tape_make_multimodal(
     content_serializer: MMContentSerializer,
     test_mm_content: MMContent = {"text": "This is a sample sentence."},
     **kwargs: Any,
-) -> MMVectorStore:
+) -> DTMMVectorStore:
     """
     create a multimodal-ready vector store by duct-taping it onto
     a regular vector store. Not the cleanest way, but it enables
@@ -164,9 +166,10 @@ def duct_tape_make_multimodal(
     passthrough_embedding = DTPassthroughEmbeddings(
         embedding_dimension=embedding_dimension
     )
+    # THIS DOES NOT TYPECHECK, and we know it
     base_vector_store = base_vectorstore_class(
         embedding=passthrough_embedding, **kwargs
-    )
+    )  # type: ignore
 
     return DTMMVectorStore(
         embedding=embedding,

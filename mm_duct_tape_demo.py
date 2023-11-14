@@ -40,7 +40,8 @@ dt_mm_vectorstore = duct_tape_make_multimodal(
     keyspace=None,
 )
 
-dt_mm_vectorstore.base_vector_store.clear()
+# THIS DOES NOT TYPECHECK, and we know it
+dt_mm_vectorstore.base_vector_store.clear()  # type: ignore
 
 print("\nINSERTING\n")
 
