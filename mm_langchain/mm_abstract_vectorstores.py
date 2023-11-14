@@ -44,7 +44,7 @@ class VectorStore(Generic[S]):
 
     @abstractmethod
     def similarity_search(
-        self, query: MMContent, k: int = 4, **kwargs: Any
+        self, query: str, k: int = 4, **kwargs: Any
     ) -> List[Document]:
         """
         Return docs most similar to query.
@@ -54,12 +54,15 @@ class VectorStore(Generic[S]):
     def add_texts(
         self,
         texts: List[str],
-        metadatas: Optional[List[Optional[dict]]] = None,
+        metadatas: Optional[List[dict]] = None,
         **kwargs: Any,
     ) -> List[str]:
         """run texts through the embedding and store the full resulting entries."""
         embedding_vectors = self.embedding.embed_documents(texts)
-        metadatas0 = [md or {} for md in metadatas]
+        if metadatas:
+            metadatas0 = metadatas
+        else:
+            metadatas0 = [{} for _ in texts]
         return self.vector_reader_writer.store_contents(
             contents_str=texts,
             vectors=embedding_vectors,
@@ -107,16 +110,19 @@ class MMVectorStore(ABC, Generic[S]):
     def add_contents(
         self,
         contents: List[MMContent],
-        metadatas: Optional[List[Optional[dict]]] = None,
+        metadatas: Optional[List[dict]] = None,
         **kwargs: Any,
     ) -> List[str]:
         """run contexts through the embedding and store the full resulting entries."""
         embedding_vectors = self.embedding.embed_many(contents)
-        metadatas0 = [md or {} for md in metadatas]
         contents_str = [
             self.content_serializer.serialize_content_to_stored_str(content)
-            for content in zip(contents)
+            for content in contents
         ]
+        if metadatas:
+            metadatas0 = metadatas
+        else:
+            metadatas0 = [{} for _ in contents]
         return self.vector_reader_writer.store_contents(
             contents_str=contents_str,
             vectors=embedding_vectors,

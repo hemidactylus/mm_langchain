@@ -56,7 +56,7 @@ class MMContentSerializer(ABC):
         """make this value into a string according to its modality."""
 
     def deserialize_by_modality(
-        self, modality: str, stored_value: str, metadata: dict = {}
+        self, modality: str, stored_value: str, metadata: Optional[dict] = None
     ) -> Any:
         """
         restore "something" from the stored string. This needs not

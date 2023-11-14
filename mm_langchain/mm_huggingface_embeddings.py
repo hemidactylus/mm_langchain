@@ -27,7 +27,7 @@ class MMHuggingFaceEmbeddings(BaseModel, MMEmbeddings):
     def __init__(self, **kwargs: Any):
         super().__init__(**kwargs)
         try:
-            import sentence_transformers
+            import sentence_transformers  # type: ignore
 
         except ImportError as exc:
             raise ImportError(
@@ -62,11 +62,11 @@ class MMImageTextSerializer(MMContentSerializer):
             raise ValueError(f"Unexpected modality '{modality}'")
 
     def deserialize_by_modality(
-        self, modality: str, stored_value: str, metadata: dict = {}
+        self, modality: str, stored_value: str, metadata: Optional[dict] = None
     ) -> Any:
         if modality == "text":
             return stored_value
         elif modality == "image":
-            return metadata.get("image_path", "<IMAGE>")
+            return (metadata or {}).get("image_path", "<IMAGE>")
         else:
             raise ValueError(f"Unexpected modality '{modality}'")

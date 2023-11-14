@@ -1,3 +1,2 @@
 - explore the (multimodalize) duct-tape way?
-- mypy
 - add a sample loader

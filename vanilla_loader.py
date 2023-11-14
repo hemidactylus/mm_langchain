@@ -38,7 +38,7 @@ ids2 = v_vectorstore.add_texts(
         "Salticidae can see very well.",
     ],
     metadatas=[
-        None,
+        {},
         {"family": "salticidae"},
     ],
     ids=["eye", "sal"],

@@ -5,7 +5,7 @@ from langchain.pydantic_v1 import Field
 
 # stored "thing" on a vector store
 # (id, stringy blob, metadata, similarity score)
-DefaultVSearchResult = Tuple[str, str, Optional[Dict], float]
+DefaultVSearchResult = Tuple[str, str, dict, float]
 
 # MULTIMODAL-SPECIFIC CONSTRUCTS:
 

@@ -20,7 +20,7 @@ class CassandraVectorReaderWriter(VectorReaderWriter[DefaultVSearchResult]):
     def __init__(
         self,
         table_name: str,
-        vector_dimension: str,
+        vector_dimension: int,
     ) -> None:
         self.table = MetadataVectorCassandraTable(
             table=table_name,
@@ -79,7 +79,6 @@ class CassandraVectorReaderWriter(VectorReaderWriter[DefaultVSearchResult]):
 
 
 class Cassandra(VectorStore[DefaultVSearchResult]):
-    _embedding_dimension: Union[int, None]
 
     @staticmethod
     def _filter_to_metadata(filter_dict: Optional[Dict[str, str]]) -> Dict[str, Any]:
@@ -88,23 +87,18 @@ class Cassandra(VectorStore[DefaultVSearchResult]):
         else:
             return filter_dict
 
-    def _get_embedding_dimension(self) -> int:
-        if self._embedding_dimension is None:
-            self._embedding_dimension = len(
-                self.embedding.embed_query("This is a sample sentence.")
-            )
-        return self._embedding_dimension
-
     def __init__(
         self,
         embedding: Embeddings,
         table_name: str,
     ):
         self.embedding = embedding
-        self._embedding_dimension = None
+        self._embedding_dimension = len(
+            embedding.embed_query("This is a sample sentence.")
+        )
         self.vector_reader_writer = CassandraVectorReaderWriter(
             table_name=table_name,
-            vector_dimension=self._get_embedding_dimension(),
+            vector_dimension=self._embedding_dimension,
         )
 
     def similarity_search(
@@ -129,7 +123,6 @@ class Cassandra(VectorStore[DefaultVSearchResult]):
 
 
 class MMCassandra(MMVectorStore[DefaultVSearchResult]):
-    _embedding_dimension: int
 
     @staticmethod
     def _filter_to_metadata(filter_dict: Optional[Dict[str, str]]) -> Dict[str, Any]:
