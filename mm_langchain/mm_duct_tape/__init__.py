@@ -7,6 +7,7 @@ from langchain.schema.vectorstore import VectorStore as BaseVectorStore
 from ..mm_types import MMContent, MMStoredDocument
 from ..mm_abstract_embeddings import MMEmbeddings, MMContentSerializer
 from ..mm_abstract_vectorstores import MMVectorStore, VectorReaderWriter
+from .utils import compress_vector, deflate_vector
 
 
 VST = TypeVar("VST", bound="BaseVectorStore")
@@ -29,10 +30,12 @@ class DummyVectorReaderWriter(VectorReaderWriter):
 def _wrap_for_base_vectorstore(
     content: MMContent, emb_vector: List[float], content_serializer: MMContentSerializer
 ) -> str:
+    vector_dimension = len(emb_vector)
     return json.dumps(
         {
-            "stored_str": content_serializer.serialize_content_to_stored_str(content),
-            "embedding_vector": emb_vector,
+            "stored": content_serializer.serialize_content(content),
+            "embedding_vector": compress_vector(emb_vector, vector_dimension),
+            "vector_dimension": vector_dimension,
         },
         separators=(",", ":"),
         sort_keys=True,
@@ -44,9 +47,9 @@ def _unwrap_from_base_vectorstore(
     metadata: Optional[dict],
     content_serializer: MMContentSerializer,
 ) -> MMContent:
-    stored_str = json.loads(wrapped_content_str)["stored_str"]
-    return content_serializer.deserialize_stored_str_to_content(
-        stored_str=stored_str,
+    stored = json.loads(wrapped_content_str)["stored"]
+    return content_serializer.deserialize_stored(
+        stored=stored,
         metadata=metadata,
     )
 
@@ -138,7 +141,8 @@ class DTPassthroughEmbeddings(BaseEmbeddings):
         """
         try:
             contents_obj = json.loads(text)
-            return contents_obj["embedding_vector"]
+            vector_dimension = contents_obj["vector_dimension"]
+            return deflate_vector(contents_obj["embedding_vector"], vector_dimension)
         except Exception:
             return [0.0] * self.embedding_dimension
 
